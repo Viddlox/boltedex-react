@@ -1,4 +1,4 @@
-import constStatMapper from "@/utils/constStatMapper";
+import constStatMapper from "@/utils/statMapper";
 
 const computeStatPercentage = (baseStats = {}) => {
 	const maxByStat = {

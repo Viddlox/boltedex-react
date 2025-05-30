@@ -1,9 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import getPokemonEvolutionChain from "@/services/request-config/getPokemonEvolutionChain";
 
-export const useGetPokemonEvolutionChain = (name) => {
+export const useGetPokemonEvolutionChain = ({ name }) => {
   return useQuery({
     queryKey: ["pokemon-evolution-chain", name],
-    queryFn: () => getPokemonEvolutionChain(name),
+    queryFn: () => getPokemonEvolutionChain({ name }),
+    enabled: !!name,
   });
 };

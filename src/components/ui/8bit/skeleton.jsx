@@ -1,12 +1,5 @@
-import { Press_Start_2P } from "next/font/google"
-
 import { cn } from "@/lib/utils"
 import { Skeleton as ShadcnSkeleton } from "@/components/ui/skeleton"
-
-const pressStart = Press_Start_2P({
-  weight: ["400"],
-  subsets: ["latin"],
-})
 
 function Skeleton({
   children,
@@ -18,7 +11,7 @@ function Skeleton({
     <div className={cn("relative animate-pulse", className)}>
       <ShadcnSkeleton
         {...props}
-        className={cn("rounded-none border-none bg-accent", pressStart.className, className)}>
+        className={cn("rounded-none border-none bg-accent", className)}>
         {children}
       </ShadcnSkeleton>
       <div className="opacity-60">

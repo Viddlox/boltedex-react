@@ -1,4 +1,4 @@
-const constStatMapper = {
+const statMapper = {
 	hp: "HP",
 	attack: "ATK",
 	defense: "DEF",
@@ -13,5 +13,5 @@ const constStatMapper = {
 	SPD: "speed",
 };
 
-export default constStatMapper;
+export default statMapper;
 

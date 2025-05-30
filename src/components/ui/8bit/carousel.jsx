@@ -2,7 +2,7 @@ import * as React from "react"
 import useEmblaCarousel from "embla-carousel-react";
 
 import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/8bit/button"
 
 const CarouselContext = React.createContext(null)
 
@@ -149,93 +149,48 @@ const CarouselItem = React.forwardRef(({ className, ...props }, ref) => {
 })
 CarouselItem.displayName = "CarouselItem"
 
-const CarouselPrevious = React.forwardRef(({ className, variant = "outline", size = "icon", ...props }, ref) => {
+const CarouselPrevious = React.forwardRef(({ className, ...props }, ref) => {
   const { orientation, scrollPrev, canScrollPrev } = useCarousel()
 
   return (
-    <Button
+    <div
       ref={ref}
-      variant={variant}
-      size={size}
       className={cn(orientation === "horizontal"
-        ? "top-1/2 -left-10 md:-left-14 -translate-y-1/2 active:-translate-y-1 w-8 h-9 md:w-9 md:h-10 "
-        : "-top-12 left-1/2 -translate-x-1/2 rotate-90 w-8 h-10 md:w-9 md:h-11", "absolute rounded-none aspect-square grid place-items-center", className)}
-      disabled={!canScrollPrev}
-      onClick={scrollPrev}
+        ? "top-1/2 -left-6 -translate-y-1/2 w-4 h-8"
+        : "-top-6 left-1/2 -translate-x-1/2 rotate-90 w-4 h-8", 
+        "absolute bg-black text-white border border-foreground cursor-pointer", 
+        "flex items-center justify-center hover:bg-gray-800 transition-colors",
+        "disabled:opacity-50 disabled:cursor-not-allowed",
+        !canScrollPrev && "opacity-50 cursor-not-allowed",
+        className)}
+      onClick={canScrollPrev ? scrollPrev : undefined}
       {...props}>
-      <svg
-        width="50"
-        height="50"
-        viewBox="0 0 256 256"
-        fill="currentColor"
-        xmlns="http://www.w3.org/2000/svg"
-        stroke="currentColor"
-        strokeWidth="0.25"
-        color="currentColor"
-        aria-label="arrow-left">
-        <rect x="64" y="120" width="14" height="14" rx="1"></rect>
-        <rect x="96" y="120" width="14" height="14" rx="1"></rect>
-        <rect x="80" y="120" width="14" height="14" rx="1"></rect>
-        <rect x="112" y="120" width="14" height="14" rx="1"></rect>
-        <rect x="144" y="120" width="14" height="14" rx="1"></rect>
-        <rect x="160" y="120" width="14" height="14" rx="1"></rect>
-        <rect x="80" y="104" width="14" height="14" rx="1"></rect>
-        <rect x="96" y="88" width="14" height="14" rx="1"></rect>
-        <rect x="112" y="72" width="14" height="14" rx="1"></rect>
-        <rect x="80" y="136" width="14" height="14" rx="1"></rect>
-        <rect x="96" y="152" width="14" height="14" rx="1"></rect>
-        <rect x="112" y="168" width="14" height="14" rx="1"></rect>
-        <rect x="176" y="120" width="14" height="14" rx="1"></rect>
-        <rect x="128" y="120" width="14" height="14" rx="1"></rect>
-      </svg>
+      <p className="text-sm font-bold leading-none">{"<"}</p>
       <span className="sr-only">Previous slide</span>
-    </Button>
+    </div>
   );
 })
 CarouselPrevious.displayName = "CarouselPrevious"
 
-const CarouselNext = React.forwardRef(({ className, variant = "outline", size = "icon", ...props }, ref) => {
+const CarouselNext = React.forwardRef(({ className, ...props }, ref) => {
   const { orientation, scrollNext, canScrollNext } = useCarousel()
 
   return (
-    <Button
+    <div
       ref={ref}
-      variant={variant}
-      size={size}
       className={cn(orientation === "horizontal"
-        ? "top-1/2 -right-10 md:-right-14 -translate-y-1/2 active:-translate-y-1 aspect-square shrink-0 w-8 h-9 md:w-9 md:h-10 "
-        : "-bottom-12 left-1/2 -translate-x-1/2 rotate-90 w-8 h-10 md:w-9 md:h-11", "absolute rounded-none aspect-square grid place-items-center", className)}
-      disabled={!canScrollNext}
-      onClick={scrollNext}
+        ? "top-1/2 -right-6 -translate-y-1/2 w-4 h-8"
+        : "-bottom-6 left-1/2 -translate-x-1/2 rotate-90 w-4 h-8", 
+        "absolute bg-black text-white border border-foreground cursor-pointer", 
+        "flex items-center justify-center hover:bg-gray-800 transition-colors",
+        "disabled:opacity-50 disabled:cursor-not-allowed",
+        !canScrollNext && "opacity-50 cursor-not-allowed",
+        className)}
+      onClick={canScrollNext ? scrollNext : undefined}
       {...props}>
-      <svg
-        width="50"
-        height="50"
-        viewBox="0 0 256 256"
-        fill="currentColor"
-        className="block"
-        xmlns="http://www.w3.org/2000/svg"
-        stroke="currentColor"
-        strokeWidth="0.25"
-        color="currentColor"
-        aria-label="arrow-right">
-        <rect x="64" y="120" width="14" height="14" rx="1"></rect>
-        <rect x="96" y="120" width="14" height="14" rx="1"></rect>
-        <rect x="80" y="120" width="14" height="14" rx="1"></rect>
-        <rect x="112" y="120" width="14" height="14" rx="1"></rect>
-        <rect x="144" y="120" width="14" height="14" rx="1"></rect>
-        <rect x="160" y="120" width="14" height="14" rx="1"></rect>
-        <rect x="160" y="136" width="14" height="14" rx="1"></rect>
-        <rect x="144" y="152" width="14" height="14" rx="1"></rect>
-        <rect x="128" y="72" width="14" height="14" rx="1"></rect>
-        <rect x="128" y="168" width="14" height="14" rx="1"></rect>
-        <rect x="176" y="120" width="14" height="14" rx="1"></rect>
-        <rect x="160" y="104" width="14" height="14" rx="1"></rect>
-        <rect x="144" y="88" width="14" height="14" rx="1"></rect>
-        <rect x="128" y="120" width="14" height="14" rx="1"></rect>
-      </svg>
+      <p className="text-sm font-bold leading-none">{">"}</p>
       <span className="sr-only">Next slide</span>
-    </Button>
+    </div>
   );
 })
 CarouselNext.displayName = "CarouselNext"

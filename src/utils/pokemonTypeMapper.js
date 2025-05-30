@@ -5,7 +5,7 @@ const pokemonTypeMapper = {
   },
   fire: {
     src: "/src/assets/icons/fire.svg",
-    color: "bg-red-500/50", // Classic fire red
+    color: "bg-orange-500/50", // Classic fire red
   },
   water: {
     src: "/src/assets/icons/water.svg",
@@ -64,7 +64,7 @@ const pokemonTypeMapper = {
     color: "bg-red-700/50", // Deep fighting red
   },
   flying: {
-    src: "/src/assets/icons/fly.svg",
+    src: "/src/assets/icons/flying.svg",
     color: "bg-sky-400/50", // Sky blue
   },
   bug: {

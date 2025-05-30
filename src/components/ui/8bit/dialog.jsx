@@ -1,4 +1,3 @@
-import { Press_Start_2P } from "next/font/google"
 import { cva } from "class-variance-authority";
 
 import { cn } from "@/lib/utils"
@@ -12,11 +11,6 @@ import {
   DialogTitle as ShadcnDialogTitle,
   DialogTrigger as ShadcnDialogTrigger,
 } from "@/components/ui/dialog"
-
-const pressStart = Press_Start_2P({
-  weight: ["400"],
-  subsets: ["latin"],
-})
 
 const Dialog = ShadcnDialog
 
@@ -36,7 +30,7 @@ function DialogTitle({
   const { className, font } = props
   return (
     <ShadcnDialogTitle
-      className={cn(font !== "normal" && pressStart.className, className)}
+      className={cn(font !== "normal" && "font-brand", className)}
       {...props} />
   );
 }
@@ -45,7 +39,7 @@ export const dialogContentVariants = cva("", {
   variants: {
     font: {
       normal: "",
-      retro: pressStart.className,
+      retro: "font-brand",
     },
   },
   defaultVariants: {
@@ -63,7 +57,7 @@ function DialogContent({
     <ShadcnDialogContent
       className={cn(
         "bg-card rounded-none border-none",
-        font !== "normal" && pressStart.className,
+        dialogContentVariants({ font }),
         className
       )}
       {...props}>
