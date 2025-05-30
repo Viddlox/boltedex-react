@@ -1,252 +1,215 @@
 import { useEffect, useRef, useState, useMemo, useCallback } from "react";
 import { Loader2 } from "lucide-react";
+import { FixedSizeGrid as Grid } from "react-window";
+import InfiniteLoader from "react-window-infinite-loader";
 
 import Header from "@/components/Header";
-import PokemonCard from "@/components/PokemonCard";
+import PokemonCardMemo from "@/components/PokemonCard";
+import PokemonCardSkeleton from "@/components/PokemonCardSkeleton";
 
 import { useGetPokemons } from "@/hooks/useGetPokemons";
-
-const CHUNK_SIZE = 20;
-const DOM_PAGE_SIZE = CHUNK_SIZE * 2;
+import { useSearchQueryStore } from "@/stores/manageSearchQuery";
+import useDebounce from "@/hooks/useDebounce";
 
 const HomePage = () => {
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
-    useGetPokemons({ limit: CHUNK_SIZE });
+  const { searchQuery } = useSearchQueryStore();
 
-  const currentIndex = useRef(0);
-  const startElmObserver = useRef();
-  const lastElmObserver = useRef();
-  const listRef = useRef();
-  const [listItems, setListItems] = useState([]);
-  const itemsCounter = useRef(0);
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
+
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
+    useGetPokemons({ query: debouncedSearchQuery });
+
+  const gridRef = useRef();
+  const [dimensions, setDimensions] = useState({
+    width: 0,
+    height: 0,
+    columnCount: 2,
+  });
 
   const pokemons = useMemo(
     () => data?.pages.flatMap((page) => page.results) || [],
     [data]
   );
 
-  const maxItemCount = data.pages[0].results.totalCount;
-  const hasMore = hasNextPage && !isFetchingNextPage;
-
-  // Initial state, initially list is assigned 20 items then on every update list is appended with 10 items
+  // Calculate grid dimensions based on screen size
   useEffect(() => {
-    if (!pokemons || !pokemons.length) {
-      return;
-    }
-    itemsCounter.current = itemsCounter.current + 1;
-    if (itemsCounter.current === 1) {
-      fetchNextPage();
-      return;
-    }
-    if (itemsCounter.current === 2) {
-      setListItems(pokemons);
-      return;
-    }
-  }, [pokemons, fetchNextPage]);
+    const calculateDimensions = () => {
+      const width = window.innerWidth;
+      const height = window.innerHeight;
 
-  // Calculate starting index of list from where it needs to be updated
-  const getVirtualScrollArea = (isScrollDown) => {
-    const increment = CHUNK_SIZE;
-    let firstIndex;
+      let columnCount;
+      if (width >= 1280) columnCount = 5; // xl
+      else if (width >= 1024) columnCount = 4; // lg
+      else if (width >= 768) columnCount = 3; // md
+      else columnCount = 2; // sm
 
-    if (isScrollDown) {
-      firstIndex = currentIndex.current + increment;
-    } else {
-      firstIndex = currentIndex.current - increment;
-    }
+      setDimensions({
+        width: Math.max(width - 32, 320), // Account for padding, min width
+        height: height - 120, // Account for header height
+        columnCount,
+      });
+    };
 
-    if (firstIndex < 0) {
-      firstIndex = 0;
-    }
+    calculateDimensions();
+    window.addEventListener("resize", calculateDimensions);
 
-    return firstIndex;
-  };
-
-  // Append next elements to list
-  const reDrawDOM = useCallback(
-    (firstIndex) => {
-      const items = [];
-      for (let i = 0; i < DOM_PAGE_SIZE; i++) {
-        if (pokemons[i + firstIndex]) {
-          items.push(pokemons[i + firstIndex]);
-        }
-      }
-      setListItems([...items]);
-    },
-    [pokemons]
-  );
-
-  // Get number from style
-  const extractNumber = (st) => Number(st.substring(0, st.length - 2));
-
-  // Update top and bottom padding to virtualize scrolling
-  const updateTopBottomPaddings = useCallback((isScrollDown) => {
-    if (currentIndex.current === 0) {
-      return;
-    }
-    const container = document.querySelector(".pokemon-list");
-    const currentPaddingTop = extractNumber(container.style.paddingTop || "0px");
-    const currentPaddingBottom = extractNumber(container.style.paddingBottom || "0px");
-    const remPaddingsVal = 170 * CHUNK_SIZE + 10;
-    if (isScrollDown) {
-      container.style.paddingTop = currentPaddingTop + remPaddingsVal + "px";
-      container.style.paddingBottom =
-        currentPaddingBottom === 0
-          ? "0px"
-          : currentPaddingBottom - remPaddingsVal + "px";
-    } else {
-      container.style.paddingBottom =
-        currentPaddingBottom + remPaddingsVal + "px";
-      container.style.paddingTop =
-        currentPaddingTop === 0
-          ? "0px"
-          : currentPaddingTop - remPaddingsVal + "px";
-    }
+    return () => window.removeEventListener("resize", calculateDimensions);
   }, []);
 
-  // When top of list is reached
-  const topReachedCallback = useCallback(
-    (entry) => {
-      if (currentIndex.current === 0) {
-        const container = document.querySelector(".pokemon-list");
-        container.style.paddingTop = "0px";
-        container.style.paddingBottom = "0px";
-      }
-      if (entry.isIntersecting && currentIndex.current !== 0) {
-        const firstIndex = getVirtualScrollArea(false);
-        updateTopBottomPaddings(false);
-        reDrawDOM(firstIndex);
-        currentIndex.current = firstIndex;
-      }
+  // Calculate grid layout
+  const { columnWidth, rowHeight, itemCount } = useMemo(() => {
+    const { width, columnCount } = dimensions;
+    const columnWidth = Math.floor(
+      width / columnCount
+    );
+
+    // Card contains: header (h-2 but content makes it ~48px), image (h-20=80px), 
+    // height/weight (h-4=16px), types (h-8=32px), stats grid (flex-grow ~120px), footer (h-8=32px)
+    const headerHeight = 60; // CardHeader with title and Pokemon ID (needs more space)
+    const imageHeight = 80; // Fixed h-20 (80px) for image area
+    const metaHeight = 32; // Height/weight info (needs more space than h-4)
+    const typesHeight = 40; // Type badges (needs more space than h-8)
+    const statsHeight = 160; // Stats grid (flex-grow, 6 stats need more vertical space)
+    const footerHeight = 48; // Footer button (needs more space than h-8)
+    const cardPadding = 32; // Card internal padding (px-3 and other spacing)
+    const cellPadding = 24; // Grid cell padding (12px on each side)
+
+    const rowHeight =
+      headerHeight +
+      imageHeight +
+      metaHeight +
+      typesHeight +
+      statsHeight +
+      footerHeight +
+      cardPadding +
+      cellPadding;
+
+    const rowCount = Math.ceil(pokemons.length / columnCount);
+
+    // Add extra rows if we have more data to load
+    const itemCount = hasNextPage ? rowCount + 1 : rowCount;
+
+    return { columnWidth, rowHeight, itemCount };
+  }, [dimensions, pokemons.length, hasNextPage]);
+
+  // Check if item is loaded
+  const isItemLoaded = useCallback(
+    (index) => {
+      const actualItemIndex = index * dimensions.columnCount;
+      return actualItemIndex < pokemons.length;
     },
-    [updateTopBottomPaddings, reDrawDOM]
+    [pokemons.length, dimensions.columnCount]
   );
 
-  // When bottom of list is reached
-  const bottomReachedCallback = useCallback(
-    (entry) => {
-      
-      if (currentIndex.current === maxItemCount - DOM_PAGE_SIZE) {
-        console.log(maxItemCount, DOM_PAGE_SIZE);
-        return;
-      }
-      if (entry.isIntersecting) {
-        const firstIndex = getVirtualScrollArea(true);
-        if (pokemons[firstIndex + CHUNK_SIZE]) {
-          currentIndex.current = firstIndex;
-          updateTopBottomPaddings(true);
-          reDrawDOM(firstIndex);
-        } else {
-          if (hasMore) {
-            fetchNextPage();
-            return;
-          }
+  // Load more items
+  const loadMoreItems = useCallback(async () => {
+    if (hasNextPage && !isFetchingNextPage) {
+      await fetchNextPage();
+    }
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+  // Cell renderer for the grid
+  const Cell = useCallback(
+    ({ columnIndex, rowIndex, style }) => {
+      const index = rowIndex * dimensions.columnCount + columnIndex;
+      const pokemon = pokemons[index];
+
+      if (!pokemon) {
+        const isLoadingRow =
+          hasNextPage &&
+          rowIndex >= Math.floor(pokemons.length / dimensions.columnCount);
+
+        if (isLoadingRow) {
+          return (
+            <div
+              style={{
+                ...style,
+                padding: "12px",
+              }}
+            >
+              <PokemonCardSkeleton />
+            </div>
+          );
         }
+        // Return empty div for incomplete row slots (no more data expected)
+        return <div style={style} />;
       }
-    },
-    [updateTopBottomPaddings, hasMore, maxItemCount, reDrawDOM, pokemons, fetchNextPage]
-  );
 
-  // Top element that act as triggers for initiating changes
-  const topWatcherElmRef = useCallback(
-    (node) => {
-      if (startElmObserver.current) startElmObserver.current.disconnect();
-      startElmObserver.current = new IntersectionObserver((entries) => {
-        topReachedCallback(entries[0]);
-      });
-      if (node) startElmObserver.current.observe(node);
-    },
-    [topReachedCallback]
-  );
-
-  // Bottom element that act as triggers for initiating changes
-  const bottomWatcherElmRef = useCallback(
-    (node) => {
-      if (lastElmObserver.current) lastElmObserver.current.disconnect();
-      lastElmObserver.current = new IntersectionObserver((entries) => {
-        bottomReachedCallback(entries[0]);
-      });
-      if (node) lastElmObserver.current.observe(node);
-    },
-    [bottomReachedCallback]
-  );
-
-  const PokemonList = ({
-    listItems = [],
-    topWatcherElmRef,
-    bottomWatcherElmRef,
-    listRef,
-    loading,
-  }) => {
-    return useMemo(() => {
       return (
         <div
-          ref={listRef}
-          className="h-[calc(100vh-200px)] overflow-auto"
           style={{
-            scrollBehavior: "smooth",
-            overscrollBehavior: "none",
+            ...style,
+            padding: "12px",
           }}
         >
-          <div className="pokemon-list" style={{ paddingTop: 0, paddingBottom: 0 }}>
-            <div className="flex items-center justify-center">
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 w-full">
-                {listItems.map((pokemon, index) => (
-                  <div
-                    ref={
-                      listItems.length >= 20
-                        ? index === 0
-                          ? topWatcherElmRef
-                          : index === listItems.length - 1
-                          ? bottomWatcherElmRef
-                          : undefined
-                        : undefined
-                    }
-                    key={pokemon.id || index}
-                    className="pokemon-card-wrapper"
-                  >
-                    <PokemonCard pokemon={pokemon} />
-                  </div>
-                ))}
-              </div>
-            </div>
-            
-            {loading && listItems.length && (
-              <div className="flex justify-center py-8">
-                <Loader2 className="animate-spin text-red-500" />
-              </div>
-            )}
-          </div>
-          
-          {loading && !listItems.length && (
-            <div className="flex justify-center items-center h-full">
-              <Loader2 className="animate-spin text-red-500" />
-            </div>
-          )}
+          <PokemonCardMemo pokemon={pokemon} />
         </div>
       );
-    }, [
-      listItems,
-      topWatcherElmRef,
-      bottomWatcherElmRef,
-      listRef,
-      loading,
-    ]);
-  };
+    },
+    [pokemons, dimensions.columnCount, hasNextPage]
+  );
+
+  if (dimensions.width === 0 || dimensions.height === 0) {
+    return (
+      <>
+        <Header />
+        <div className="flex justify-center items-center h-screen">
+          <Loader2 size={40} className="animate-spin text-red-500" />
+        </div>
+      </>
+    );
+  }
 
   return (
-    <div className="App">
-      <main className="min-h-screen w-full pt-48 sm:pt-32 md:pt-32 px-4">
-        <Header />
-        <PokemonList
-          listItems={listItems}
-          topWatcherElmRef={topWatcherElmRef}
-          bottomWatcherElmRef={bottomWatcherElmRef}
-          listRef={listRef}
-          loading={isFetchingNextPage}
-        />
+    <>
+      <Header />
+      <main className="pt-48 sm:pt-28 md:pt-28 px-4 hide-scrollbar side-borders min-h-screen">
+        <div className="w-full flex justify-center">
+          <InfiniteLoader
+            isItemLoaded={isItemLoaded}
+            itemCount={itemCount}
+            loadMoreItems={loadMoreItems}
+            threshold={5} // Start loading when 5 items from the end
+          >
+            {({ onItemsRendered, ref }) => (
+              <Grid
+                ref={(grid) => {
+                  gridRef.current = grid;
+                  ref(grid);
+                }}
+                columnCount={dimensions.columnCount}
+                columnWidth={columnWidth}
+                height={dimensions.height}
+                rowCount={itemCount}
+                rowHeight={rowHeight}
+                width={dimensions.width}
+                className="hide-scrollbar"
+                onItemsRendered={({
+                  visibleRowStartIndex,
+                  visibleRowStopIndex,
+                  overscanRowStartIndex,
+                  overscanRowStopIndex,
+                }) => {
+                  onItemsRendered({
+                    overscanStartIndex: overscanRowStartIndex,
+                    overscanStopIndex: overscanRowStopIndex,
+                    visibleStartIndex: visibleRowStartIndex,
+                    visibleStopIndex: visibleRowStopIndex,
+                  });
+                }}
+                style={{
+                  outline: "none",
+                }}
+                overscanRowCount={2}
+                overscanColumnCount={0}
+              >
+                {Cell}
+              </Grid>
+            )}
+          </InfiniteLoader>
+        </div>
       </main>
-    </div>
+    </>
   );
 };
 

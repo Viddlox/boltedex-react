@@ -32,13 +32,10 @@ function Card({
     <div className={cn("relative group", className)}>
       {/* Main card container with isometric beveled effect */}
       <div className="relative">
-        {/* Bottom shadow layer (darkest) */}
         <div 
           className="absolute top-2 left-2 w-full h-full bg-foreground/40 rounded-none"
           aria-hidden="true" 
         />
-
-        {/* Middle shadow layer */}
         <div 
           className="absolute top-1 left-1 w-full h-full bg-foreground/25 rounded-none"
           aria-hidden="true" 
@@ -56,22 +53,9 @@ function Card({
               className
             )} 
           />
-
-          {/* Outer light outline (top-left) */}
-          <div
-            className="absolute -inset-1 border-t-2 border-l-2 border-white/60 pointer-events-none rounded-none"
-            aria-hidden="true" 
-          />
-
           {/* Outer dark outline (bottom-right) */}
           <div
             className="absolute -inset-1 border-r-2 border-b-2 border-foreground/40 pointer-events-none rounded-none"
-            aria-hidden="true" 
-          />
-
-          {/* Inner accent outline */}
-          <div
-            className="absolute inset-1 border-t border-l border-white/40 border-r border-b border-foreground/30 pointer-events-none rounded-none"
             aria-hidden="true" 
           />
         </div>
