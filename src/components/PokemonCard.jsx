@@ -38,7 +38,8 @@ import computeHeightWeightSI from "@/utils/computeHeightWeightSI";
 import statMapper from "@/utils/statMapper";
 import imageNameMapper from "@/utils/imageNameMapper";
 
-import backgroundImage from "@/assets/card_background.png";
+import getCardBackgroundByType from "@/utils/cardBackgrounds";
+
 
 export const PokemonType = memo(({ type, damage }) => (
   <HoverCard>
@@ -75,34 +76,36 @@ export const CarouselPokemon = memo(
     images,
     imageLoaded = false,
     setImageLoaded = () => {},
-    height = null,
-    weight = null,
     id = null,
   }) => {
+    const backgroundImage = getCardBackgroundByType(pokemon.types);
     return (
-      <div className="w-full max-w-sm mx-auto px-8">
-        <Carousel className="w-full">
+      <div className="w-full mx-auto px-0 sm:px-6">
+        <Carousel>
           <CarouselContent>
             {images.map(({ imageName, imageUrl }, index) => (
               <CarouselItem key={index}>
                 <div className="flex flex-col items-center">
                   <div className="text-center w-full bg-red-400/50">
-                    <p className="text-sm font-bold text-foreground px-3 border-x-2 border-t-2 border-foreground rounded-none font-brand">
+                    <p className="text-xs font-bold text-foreground px-1 sm:px-3 border-x-2 border-t-2 border-foreground rounded-none font-brand">
                       {imageName || "Unknown"}
                     </p>
                   </div>
                   <div
-                    className="relative flex justify-center items-center py-2 bg-cover bg-center rounded-lg border-2 border-black mb-2 h-40 flex-shrink-0 mx-auto w-full max-w-sm"
-                    style={{ backgroundImage }}
+                    className="relative flex justify-center items-center py-1 sm:py-2 bg-cover bg-center rounded-lg border-2 border-black mb-1 sm:mb-2 h-24 sm:h-40 flex-shrink-0 w-full"
+                    style={{ backgroundImage: `url(${backgroundImage})` }}
                   >
                     {!imageLoaded && imageUrl && (
-                      <Loader2 color="red" className="w-16 h-16 animate-spin" />
+                      <Loader2
+                        color="red"
+                        className="w-8 h-8 sm:w-16 sm:h-16 animate-spin"
+                      />
                     )}
 
                     {!imageUrl ? (
                       // Show placeholder when no image is available
                       <div className="flex flex-col items-center justify-center text-gray-400">
-                        <div className="w-12 h-12 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center">
+                        <div className="w-6 h-6 sm:w-12 sm:h-12 border border-dashed sm:border-2 border-gray-300 rounded sm:rounded-lg flex items-center justify-center">
                           <span className="text-xs font-bold">?</span>
                         </div>
                         <span className="text-xs mt-1">No Image</span>
@@ -111,7 +114,7 @@ export const CarouselPokemon = memo(
                       <img
                         src={imageUrl}
                         alt={pokemon.name}
-                        className={`relative z-20 max-w-32 max-h-32 object-contain transition-opacity duration-200 ${
+                        className={`relative z-20 h-full w-full object-contain transition-opacity duration-200 ${
                           imageLoaded ? "opacity-100" : "opacity-0 h-0 w-0"
                         }`}
                         loading="lazy"
@@ -120,17 +123,9 @@ export const CarouselPokemon = memo(
                       />
                     )}
                   </div>
-
-                  {height && weight && (
-                    <div className="text-center w-full bg-white">
-                      <p className="text-sm font-bold text-foreground px-3 border-2 border-foreground rounded-none font-brand">
-                        {height} {weight}
-                      </p>
-                    </div>
-                  )}
                   {id && (
                     <div className="text-center w-full bg-white">
-                      <p className="text-sm font-bold text-foreground px-3 border-2 border-foreground rounded-none font-brand">
+                      <p className="text-xs sm:text-sm font-bold text-foreground px-1 sm:px-3 border-2 border-foreground rounded-none font-brand">
                         #{id}
                       </p>
                     </div>
@@ -182,13 +177,15 @@ const PokemonCard = memo(({ pokemon }) => {
       pokemon.height,
       pokemon.weight
     );
+    const backgroundImage = getCardBackgroundByType(pokemon.types);
 
     return {
       pokemonStatPercentages,
       height,
       weight,
+      backgroundImage,
     };
-  }, [pokemon.baseStats, pokemon.height, pokemon.weight]);
+  }, [pokemon.baseStats, pokemon.height, pokemon.weight, pokemon.types]);
 
   const shouldReduceMotion = window.matchMedia(
     "(prefers-reduced-motion: reduce)"
@@ -230,7 +227,7 @@ const PokemonCard = memo(({ pokemon }) => {
         }
         onClick={handleCardClick}
       >
-        <Card className="relative overflow-hidden transition-all duration-300 hover:border-red-400 h-full flex flex-col">
+        <Card className="relative overflow-hidden transition-all duration-300 hover:border-red-400 h-full flex flex-col max-w-xs sm:max-w-sm mx-auto">
           {!shouldReduceMotion && (
             <motion.div
               className="absolute -inset-1 bg-gradient-to-r from-red-400/20 via-lime-300/30 to-red-400/20 rounded-lg blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300"
@@ -250,7 +247,7 @@ const PokemonCard = memo(({ pokemon }) => {
           <CardContent className="flex flex-col flex-grow px-3">
             <div
               className="relative flex justify-center items-center py-2 bg-cover bg-center rounded-lg border-2 border-black mb-2 h-20 flex-shrink-0"
-              style={{ backgroundImage }}
+              style={{ backgroundImage: `url(${computedData.backgroundImage})` }}
             >
               {!imageLoaded && imageUrl && (
                 <Loader2 color="red" className="w-16 h-16 animate-spin" />
@@ -337,21 +334,21 @@ const PokemonCard = memo(({ pokemon }) => {
       </motion.div>
 
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="sm:max-w-[425px] [&>button]:hidden">
-          <DialogHeader>
-            <DialogTitle className="capitalize text-center">
+        <DialogContent className="max-w-[85vw] sm:max-w-[425px] max-h-[80vh] [&>button]:hidden p-2 sm:p-6 flex flex-col">
+          <DialogHeader className="pb-2 sm:pb-4 flex-shrink-0">
+            <DialogTitle className="capitalize text-center text-xl sm:text-2xl">
               {pokemon.name} #{pokemon.id}
             </DialogTitle>
           </DialogHeader>
-          <CarouselPokemon
-            pokemon={pokemon}
-            images={imageUrls}
-            imageLoaded={imageLoaded}
-            setImageLoaded={setImageLoaded}
-            height={computedData.height}
-            weight={computedData.weight}
-          />
-          <PokemonCardDetails pokemon={pokemon} />
+          <div className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+            <CarouselPokemon
+              pokemon={pokemon}
+              images={imageUrls}
+              imageLoaded={imageLoaded}
+              setImageLoaded={setImageLoaded}
+            />
+            <PokemonCardDetails pokemon={pokemon} />
+          </div>
         </DialogContent>
       </Dialog>
     </>

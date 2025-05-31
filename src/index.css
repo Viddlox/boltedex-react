@@ -385,7 +385,7 @@ button:focus-visible {
   .retro-tabs [data-slot="tabs-trigger"] {
     border-radius: 0 !important;
     border: none !important;
-    background: transparent !important;
+    background: var(--color-gray-200) !important;
     color: var(--muted-foreground) !important;
     font-weight: bold !important;
     padding: 12px 16px !important;
