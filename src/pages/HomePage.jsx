@@ -26,10 +26,36 @@ const HomePage = () => {
     columnCount: 2,
   });
 
+  // Track image loading states for each Pokemon
+  const [imageLoadingStates, setImageLoadingStates] = useState(new Map());
+
   const pokemons = useMemo(
     () => data?.pages.flatMap((page) => page.results) || [],
     [data]
   );
+
+  // Reset image loading states when search query changes
+  useEffect(() => {
+    setImageLoadingStates(new Map());
+  }, [debouncedSearchQuery]);
+
+  // Function to handle image load completion
+  const handleImageLoaded = useCallback((pokemonId) => {
+    setImageLoadingStates((prev) => {
+      const newMap = new Map(prev);
+      newMap.set(pokemonId, true);
+      return newMap;
+    });
+  }, []);
+
+  // Function to handle image load start
+  const handleImageLoadStart = useCallback((pokemonId) => {
+    setImageLoadingStates((prev) => {
+      const newMap = new Map(prev);
+      newMap.set(pokemonId, false);
+      return newMap;
+    });
+  }, []);
 
   // Calculate grid dimensions based on screen size
   useEffect(() => {
@@ -59,11 +85,9 @@ const HomePage = () => {
   // Calculate grid layout
   const { columnWidth, rowHeight, itemCount } = useMemo(() => {
     const { width, columnCount } = dimensions;
-    const columnWidth = Math.floor(
-      width / columnCount
-    );
+    const columnWidth = Math.floor(width / columnCount);
 
-    // Card contains: header (h-2 but content makes it ~48px), image (h-20=80px), 
+    // Card contains: header (h-2 but content makes it ~48px), image (h-20=80px),
     // height/weight (h-4=16px), types (h-8=32px), stats grid (flex-grow ~120px), footer (h-8=32px)
     const headerHeight = 60; // CardHeader with title and Pokemon ID (needs more space)
     const imageHeight = 80; // Fixed h-20 (80px) for image area
@@ -135,6 +159,29 @@ const HomePage = () => {
         return <div style={style} />;
       }
 
+      // Check if this Pokemon's image has loaded
+      const isImageLoaded = imageLoadingStates.get(pokemon.id);
+
+      if (
+        isImageLoaded === false ||
+        (isImageLoaded === undefined && pokemon.sprites?.frontDefault)
+      ) {
+        if (isImageLoaded === undefined) {
+          handleImageLoadStart(pokemon.id);
+        }
+
+        return (
+          <div
+            style={{
+              ...style,
+              padding: "12px",
+            }}
+          >
+            <PokemonCardSkeleton />
+          </div>
+        );
+      }
+
       return (
         <div
           style={{
@@ -142,11 +189,22 @@ const HomePage = () => {
             padding: "12px",
           }}
         >
-          <PokemonCardMemo pokemon={pokemon} />
+          <PokemonCardMemo
+            pokemon={pokemon}
+            onImageLoad={() => handleImageLoaded(pokemon.id)}
+            onImageLoadStart={() => handleImageLoadStart(pokemon.id)}
+          />
         </div>
       );
     },
-    [pokemons, dimensions.columnCount, hasNextPage]
+    [
+      pokemons,
+      dimensions.columnCount,
+      hasNextPage,
+      imageLoadingStates,
+      handleImageLoaded,
+      handleImageLoadStart,
+    ]
   );
 
   if (dimensions.width === 0 || dimensions.height === 0) {

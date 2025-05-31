@@ -38,6 +38,8 @@ import computeHeightWeightSI from "@/utils/computeHeightWeightSI";
 import statMapper from "@/utils/statMapper";
 import imageNameMapper from "@/utils/imageNameMapper";
 
+import backgroundImage from "@/assets/card_background.png";
+
 export const PokemonType = memo(({ type, damage }) => (
   <HoverCard>
     <HoverCardTrigger className="hover:scale-110 transition-all duration-300">
@@ -91,9 +93,7 @@ export const CarouselPokemon = memo(
                   </div>
                   <div
                     className="relative flex justify-center items-center py-2 bg-cover bg-center rounded-lg border-2 border-black mb-2 h-40 flex-shrink-0 mx-auto w-full max-w-sm"
-                    style={{
-                      backgroundImage: `url('/src/assets/card_background.png')`,
-                    }}
+                    style={{ backgroundImage }}
                   >
                     {!imageLoaded && imageUrl && (
                       <Loader2 color="red" className="w-16 h-16 animate-spin" />
@@ -250,9 +250,7 @@ const PokemonCard = memo(({ pokemon }) => {
           <CardContent className="flex flex-col flex-grow px-3">
             <div
               className="relative flex justify-center items-center py-2 bg-cover bg-center rounded-lg border-2 border-black mb-2 h-20 flex-shrink-0"
-              style={{
-                backgroundImage: `url('/src/assets/card_background.png')`,
-              }}
+              style={{ backgroundImage }}
             >
               {!imageLoaded && imageUrl && (
                 <Loader2 color="red" className="w-16 h-16 animate-spin" />
