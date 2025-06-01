@@ -1,8 +1,18 @@
 # 🎮 BolteDex React - Interactive Pokémon Encyclopedia
 
 <div align="center">
+  <img src="demo.gif" alt="BolteDex React Demo" width="800" style="border-radius: 10px; margin: 20px 0;">
+</div>
+
+<div align="center">
   <p>
     <em>A modern, interactive Pokémon encyclopedia built with React and powered by the PokéAPI</em>
+  </p>
+  
+  <p>
+    <a href="https://boltedx.up.railway.app/" target="_blank">
+      <img src="https://img.shields.io/badge/🚀_Live_Demo-FF6B6B?style=for-the-badge&logoColor=white" alt="Live Demo" />
+    </a>
   </p>
   
   ![React](https://img.shields.io/badge/React-19.x-blue?style=for-the-badge&logo=react)
