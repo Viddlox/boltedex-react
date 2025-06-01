@@ -6,6 +6,8 @@ const storage = typeof window !== "undefined" ? window.localStorage : undefined;
 export const useSearchQueryStore = create(
   persist(
     (set) => ({
+      isSearching: false,
+      setIsSearching: (isSearching) => set({ isSearching }),
       searchQuery: "",
       setSearchQuery: (query) => set({ searchQuery: query }),
     }),

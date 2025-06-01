@@ -80,7 +80,7 @@ export const CarouselPokemon = memo(
   }) => {
     const backgroundImage = getCardBackgroundByType(pokemon.types);
     return (
-      <div className="w-full mx-auto px-0 sm:px-6">
+      <div className="max-w-xs sm:max-w-sm mx-auto px-0 sm:px-6">
         <Carousel>
           <CarouselContent>
             {images.map(({ imageName, imageUrl }, index) => (

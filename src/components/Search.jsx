@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useEffect } from "react"
 import { Input } from "@/components/ui/8bit/input"
 import { motion } from "framer-motion"
 import { Search as SearchIcon, Loader2 } from "lucide-react"
@@ -7,9 +7,8 @@ import { useSearchQueryStore } from "@/stores/manageSearchQuery";
 import useDebounce from "@/hooks/useDebounce";
 
 const Search = () => {
-  const { searchQuery, setSearchQuery } = useSearchQueryStore();
+  const { searchQuery, setSearchQuery, setIsSearching, isSearching } = useSearchQueryStore();
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
-  const [isSearching, setIsSearching] = useState(false);
 
   // Show loading when user is typing but search hasn't been triggered yet
   useEffect(() => {
@@ -18,7 +17,11 @@ const Search = () => {
     } else {
       setIsSearching(false);
     }
-  }, [searchQuery, debouncedSearchQuery]);
+  }, [searchQuery, debouncedSearchQuery, setIsSearching]);
+
+  const handleSearch = (e) => {
+    setSearchQuery(e.target.value);
+  }
   
   return (
     <motion.div
@@ -33,7 +36,7 @@ const Search = () => {
           placeholder="Search for a Pokémon" 
           className="w-full bg-white pr-8"
           value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
+          onChange={handleSearch}
         />
         <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
           {isSearching ? (

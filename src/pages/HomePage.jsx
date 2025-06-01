@@ -12,11 +12,11 @@ import { useSearchQueryStore } from "@/stores/manageSearchQuery";
 import useDebounce from "@/hooks/useDebounce";
 
 const HomePage = () => {
-  const { searchQuery } = useSearchQueryStore();
+  const { searchQuery, isSearching } = useSearchQueryStore();
 
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
     useGetPokemons({ query: debouncedSearchQuery });
 
   const gridRef = useRef();
@@ -84,21 +84,36 @@ const HomePage = () => {
       cardPadding +
       cellPadding;
 
-    const rowCount = Math.ceil(pokemons.length / columnCount);
+    // When searching or loading, show skeleton cards
+    const isSearchingOrLoading = isSearching || isLoading;
+    
+    let rowCount;
+    if (isSearchingOrLoading && pokemons.length === 0) {
+      // Show a grid of skeleton cards when searching/loading with no results yet
+      const skeletonCount = columnCount * 3; // Show 3 rows of skeletons
+      rowCount = Math.ceil(skeletonCount / columnCount);
+    } else {
+      rowCount = Math.ceil(pokemons.length / columnCount);
+    }
 
-    // Add extra rows if we have more data to load
+    // Add extra rows if we have more data to load (for pagination)
     const itemCount = hasNextPage ? rowCount + 1 : rowCount;
 
     return { columnWidth, rowHeight, itemCount };
-  }, [dimensions, pokemons.length, hasNextPage]);
+  }, [dimensions, pokemons.length, hasNextPage, isSearching, isLoading]);
 
   // Check if item is loaded
   const isItemLoaded = useCallback(
     (index) => {
+      // If we're searching/loading and have no pokemons, nothing is loaded
+      if ((isSearching || isLoading) && pokemons.length === 0) {
+        return false;
+      }
+      
       const actualItemIndex = index * dimensions.columnCount;
       return actualItemIndex < pokemons.length;
     },
-    [pokemons.length, dimensions.columnCount]
+    [pokemons.length, dimensions.columnCount, isSearching, isLoading]
   );
 
   // Load more items
@@ -114,23 +129,27 @@ const HomePage = () => {
       const index = rowIndex * dimensions.columnCount + columnIndex;
       const pokemon = pokemons[index];
 
-      if (!pokemon) {
-        const isLoadingRow =
-          hasNextPage &&
-          rowIndex >= Math.floor(pokemons.length / dimensions.columnCount);
+      // Show skeletons when searching/loading or when loading more items
+      const isSearchingOrLoading = isSearching || isLoading;
+      const shouldShowSkeleton = !pokemon && (
+        isSearchingOrLoading || 
+        (hasNextPage && rowIndex >= Math.floor(pokemons.length / dimensions.columnCount))
+      );
 
-        if (isLoadingRow) {
-          return (
-            <div
-              style={{
-                ...style,
-                padding: "12px",
-              }}
-            >
-              <PokemonCardSkeleton />
-            </div>
-          );
-        }
+      if (shouldShowSkeleton) {
+        return (
+          <div
+            style={{
+              ...style,
+              padding: "12px",
+            }}
+          >
+            <PokemonCardSkeleton />
+          </div>
+        );
+      }
+
+      if (!pokemon) {
         // Return empty div for incomplete row slots (no more data expected)
         return <div style={style} />;
       }
@@ -146,7 +165,7 @@ const HomePage = () => {
         </div>
       );
     },
-    [pokemons, dimensions.columnCount, hasNextPage]
+    [pokemons, dimensions.columnCount, hasNextPage, isSearching, isLoading]
   );
 
   if (dimensions.width === 0 || dimensions.height === 0) {

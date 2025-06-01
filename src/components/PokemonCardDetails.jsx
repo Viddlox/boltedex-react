@@ -74,8 +74,10 @@ const PokemonCardDetails = ({ pokemon }) => {
 
   const leftCardRef = useRef(null);
   const rightCardRef = useRef(null);
+  const bottomCardRef = useRef(null);
   const [showLeftChevron, setShowLeftChevron] = useState(false);
   const [showRightChevron, setShowRightChevron] = useState(false);
+  const [showBottomChevron, setShowBottomChevron] = useState(false);
 
   const checkScrollable = (element, setChevron) => {
     if (!element) return;
@@ -89,20 +91,27 @@ const PokemonCardDetails = ({ pokemon }) => {
   useEffect(() => {
     const leftElement = leftCardRef.current;
     const rightElement = rightCardRef.current;
+    const bottomElement = bottomCardRef.current;
 
     checkScrollable(leftElement, setShowLeftChevron);
     checkScrollable(rightElement, setShowRightChevron);
+    checkScrollable(bottomElement, setShowBottomChevron);
 
     const handleLeftScroll = () =>
       checkScrollable(leftElement, setShowLeftChevron);
     const handleRightScroll = () =>
       checkScrollable(rightElement, setShowRightChevron);
+    const handleBottomScroll = () =>
+      checkScrollable(bottomElement, setShowBottomChevron);
 
     if (leftElement) {
       leftElement.addEventListener("scroll", handleLeftScroll);
     }
     if (rightElement) {
       rightElement.addEventListener("scroll", handleRightScroll);
+    }
+    if (bottomElement) {
+      bottomElement.addEventListener("scroll", handleBottomScroll);
     }
 
     return () => {
@@ -112,8 +121,11 @@ const PokemonCardDetails = ({ pokemon }) => {
       if (rightElement) {
         rightElement.removeEventListener("scroll", handleRightScroll);
       }
+      if (bottomElement) {
+        bottomElement.removeEventListener("scroll", handleBottomScroll);
+      }
     };
-  }, [pokemon, weaknesses, immunities, abilities]);
+  }, [pokemon, weaknesses, immunities, abilities, locationEncounters, evolutionChain]);
 
   return (
     <Tabs
@@ -193,7 +205,7 @@ const PokemonCardDetails = ({ pokemon }) => {
               </div>
               {showLeftChevron && (
                 <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2">
-                  <ChevronDown className="w-3 h-3 md:w-4 md:h-4 text-black" />
+                  <ChevronDown className="w-4 h-4 text-black" />
                 </div>
               )}
             </CardContent>
@@ -259,7 +271,7 @@ const PokemonCardDetails = ({ pokemon }) => {
             <CardTitle className="text-lg font-bold text-center mb-2 md:mb-4">
               Base Stats
             </CardTitle>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               {Object.entries(computedData.pokemonStatPercentages).map(
                 ([stat, percentage]) => (
                   <StatBar
@@ -354,7 +366,10 @@ const PokemonCardDetails = ({ pokemon }) => {
       <TabsContent value="location" className="space-y-4">
         <Card className="flex flex-col h-48 md:h-64 bg-gray-200">
           <CardContent className="pt-0 flex flex-col h-full">
-            <div className="flex flex-col items-center space-y-3 md:space-y-6 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+            <div
+              className="flex flex-col items-center space-y-3 md:space-y-6 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+              ref={bottomCardRef}
+            >
               {locationEncounters && locationEncounters.length > 0 ? (
                 locationEncounters.map((location, index) => (
                   <div
@@ -383,6 +398,11 @@ const PokemonCardDetails = ({ pokemon }) => {
                 </div>
               )}
             </div>
+            {showBottomChevron && (
+              <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2">
+                <ChevronDown className="w-4 h-4 text-black" />
+              </div>
+            )}
           </CardContent>
         </Card>
       </TabsContent>

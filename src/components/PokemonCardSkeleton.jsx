@@ -9,9 +9,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 const PokemonCardSkeleton = memo(() => {
   return (
-    <div className="group cursor-pointer h-full">
+    <div className="group cursor-pointer h-full relative overflow-hidden flex flex-col max-w-xs sm:max-w-sm mx-auto">
       <Card className="relative overflow-hidden h-full flex flex-col">
-        <CardHeader className="flex-shrink-0 h-16 flex items-center justify-center">
+        <CardHeader className="flex-shrink-0 h-2 flex items-center justify-center">
           <div className="flex flex-col items-center gap-1 w-full">
             <Skeleton className="h-4 w-24 rounded-none" />
             <Skeleton className="h-3 w-12 rounded-none" />
@@ -36,7 +36,10 @@ const PokemonCardSkeleton = memo(() => {
           <div className="flex flex-col items-center justify-center flex-grow min-h-0">
             <div className="grid grid-cols-2 gap-1 w-full h-full">
               {Array.from({ length: 6 }).map((_, index) => (
-                <div key={index} className="flex flex-col items-center justify-center gap-1">
+                <div
+                  key={index}
+                  className="flex flex-col items-center justify-center gap-1"
+                >
                   <Skeleton className="h-3 w-16 rounded-none" />
                   <Skeleton className="h-2 w-full rounded-none" />
                 </div>
@@ -60,4 +63,4 @@ const PokemonCardSkeleton = memo(() => {
 
 PokemonCardSkeleton.displayName = "PokemonCardSkeleton";
 
-export default PokemonCardSkeleton; 
+export default PokemonCardSkeleton;
