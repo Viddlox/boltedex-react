@@ -13,30 +13,37 @@ import { Card, CardContent, CardTitle } from "@/components/ui/8bit/card";
 import { useGetPokemonLocationEncounters } from "@/hooks/useGetPokemonLocationEncounters";
 import { useGetPokemonEvolutionChain } from "@/hooks/useGetPokemonEvolutionChain";
 import { useGetPokemonAbilities } from "@/hooks/useGetPokemonAbilities";
+import { useGetPokemonDetail } from "@/hooks/useGetPokemonDetail";
+
 import computeStatPercentage from "@/utils/computeStatPercentage";
 import computeHeightWeightSI from "@/utils/computeHeightWeightSI";
 import statMapper from "@/utils/statMapper";
 import imageNameMapper from "@/utils/imageNameMapper";
 import PokemonCardImageBackground from "@/components/PokemonCardImageBackground";
 
-const PokemonCardDetails = ({ pokemon }) => {
+const PokemonCardDetails = ({ currentPokemon, setCurrentPokemon }) => {
+  const [selectedPokemonName, setSelectedPokemonName] = useState(currentPokemon.name);
+
+  const { data: pokemonDetail } = useGetPokemonDetail({ name: selectedPokemonName });
   const { data: abilities, isFetching: isFetchingAbilities } =
-    useGetPokemonAbilities({ name: pokemon.name });
+    useGetPokemonAbilities({ name: selectedPokemonName });
   const { data: evolutionChain, isFetching: isFetchingEvolutionChain } =
     useGetPokemonEvolutionChain({
-      name: pokemon.name,
+      name: selectedPokemonName,
     });
   const { data: locationEncounters, isFetching: isFetchingLocationEncounters } =
     useGetPokemonLocationEncounters({
-      name: pokemon.name,
+      name: selectedPokemonName,
     });
-  const types = pokemon.types;
+  const types = currentPokemon.types;
 
   const computedData = useMemo(() => {
-    const pokemonStatPercentages = computeStatPercentage(pokemon.baseStats);
+    const pokemonStatPercentages = computeStatPercentage(
+      currentPokemon.baseStats
+    );
     const { height, weight } = computeHeightWeightSI(
-      pokemon.height,
-      pokemon.weight
+      currentPokemon.height,
+      currentPokemon.weight
     );
 
     return {
@@ -44,43 +51,42 @@ const PokemonCardDetails = ({ pokemon }) => {
       height,
       weight,
     };
-  }, [pokemon.baseStats, pokemon.height, pokemon.weight]);
+  }, [currentPokemon.baseStats, currentPokemon.height, currentPokemon.weight]);
 
-  const weaknesses = useMemo(
-    () =>
-      Object.entries(pokemon.weaknesses)
-        .map(([key, value]) => {
-          return {
-            type: key,
-            damage: value,
-          };
-        })
-        .sort((a, b) => a.damage - b.damage),
-    [pokemon.weaknesses]
-  );
+  useEffect(() => {
+    if (pokemonDetail) {
+      const weaknessesSource = pokemonDetail.weaknesses || {};
+      const immunitiesSource = pokemonDetail.immunities || {};
 
-  const immunities = useMemo(
-    () =>
-      Object.entries(pokemon.immunities)
-        .map(([key, value]) => {
-          return {
-            type: key,
-            damage: value,
-          };
-        })
-        .sort((a, b) => a.damage - b.damage),
-    [pokemon.immunities]
-  );
+      const weaknesses = Object.entries(weaknessesSource).map(([key, value]) => ({
+        type: key,
+        damage: value,
+      })).sort((a, b) => a.damage - b.damage);
+
+      const immunities = Object.entries(immunitiesSource).map(([key, value]) => ({
+        type: key,
+        damage: value,
+      })).sort((a, b) => a.damage - b.damage);
+
+      setCurrentPokemon({
+        ...pokemonDetail,
+        weaknesses,
+        immunities,
+      });
+    }
+  }, [pokemonDetail, setCurrentPokemon]);
 
   const leftCardRef = useRef(null);
   const rightCardRef = useRef(null);
   const bottomCardRef = useRef(null);
+
+  const [currentCard, setCurrentCard] = useState("overview");
   const [showLeftChevron, setShowLeftChevron] = useState(false);
   const [showRightChevron, setShowRightChevron] = useState(false);
   const [showBottomChevron, setShowBottomChevron] = useState(false);
 
   const checkScrollable = (element, setChevron) => {
-    if (!element) return;
+    if (!element) return; 
     const { scrollTop, scrollHeight, clientHeight } = element;
     const hasMore =
       scrollHeight > clientHeight &&
@@ -126,13 +132,18 @@ const PokemonCardDetails = ({ pokemon }) => {
       }
     };
   }, [
-    pokemon,
-    weaknesses,
-    immunities,
+    currentPokemon,
     abilities,
     locationEncounters,
     evolutionChain,
+    currentCard,
   ]);
+
+  const handleEvolutionClick = (evolutionPokemon) => {
+    if (evolutionPokemon.name !== currentPokemon.name) {
+      setSelectedPokemonName(evolutionPokemon.name);
+    }
+  };
 
   return (
     <Tabs
@@ -140,6 +151,9 @@ const PokemonCardDetails = ({ pokemon }) => {
       className="w-full"
       variant="retro"
       font="retro"
+      onValueChange={(value) => {
+        setCurrentCard(value);
+      }}
     >
       <TabsList className="grid w-full grid-cols-3 h-6 sm:h-auto text-lg font-bold font-brand">
         <TabsTrigger value="overview">Overview</TabsTrigger>
@@ -160,7 +174,7 @@ const PokemonCardDetails = ({ pokemon }) => {
                 <div>
                   <h3 className="text-lg font-bold mb-1 md:mb-2">Types</h3>
                   <div className="flex flex-row gap-2 md:gap-3">
-                    {pokemon.types.map((type) => (
+                    {currentPokemon.types.map((type) => (
                       <PokemonType key={type} type={type} />
                     ))}
                   </div>
@@ -170,8 +184,8 @@ const PokemonCardDetails = ({ pokemon }) => {
                 <div>
                   <h3 className="text-lg font-bold mb-1 md:mb-2">Weaknesses</h3>
                   <div className="flex flex-wrap gap-1 md:gap-2">
-                    {weaknesses.length > 0 ? (
-                      weaknesses.map((weakness) => (
+                    {currentPokemon.weaknesses.length > 0 ? (
+                      currentPokemon.weaknesses.map((weakness) => (
                         <PokemonType
                           key={weakness.type}
                           type={weakness.type}
@@ -192,8 +206,8 @@ const PokemonCardDetails = ({ pokemon }) => {
                 <div>
                   <h3 className="text-lg font-bold mb-1 md:mb-2">Immunities</h3>
                   <div className="flex flex-wrap gap-1 md:gap-2">
-                    {immunities.length > 0 ? (
-                      immunities.map((immunity) => (
+                    {currentPokemon.immunities.length > 0 ? (
+                      currentPokemon.immunities.map((immunity) => (
                         <PokemonType
                           key={immunity.type}
                           type={immunity.type}
@@ -284,7 +298,7 @@ const PokemonCardDetails = ({ pokemon }) => {
                   <StatBar
                     key={stat}
                     stat={stat}
-                    value={pokemon.baseStats[statMapper[stat]]}
+                    value={currentPokemon.baseStats[statMapper[stat]]}
                     percentage={percentage}
                   />
                 )
@@ -300,7 +314,6 @@ const PokemonCardDetails = ({ pokemon }) => {
             <div className="flex flex-col items-center space-y-3 md:space-y-6 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
               {evolutionChain && evolutionChain.length > 1 ? (
                 evolutionChain.map((evolutionPokemon, index) => {
-                  // Transform sprites into the format expected by CarouselPokemon
                   const images = Object.entries(evolutionPokemon.sprites)
                     .map(([key, value]) => {
                       if (value) {
@@ -311,17 +324,21 @@ const PokemonCardDetails = ({ pokemon }) => {
                       }
                       return null;
                     })
-                    .filter(Boolean); // Filter out null/undefined values
+                    .filter(Boolean);
 
                   return (
                     <div
                       key={evolutionPokemon.id}
-                      className="flex flex-col items-center w-full"
+                      className="flex flex-col items-center w-full mt-1"
                     >
                       {/* Evolution Stage */}
                       <PokemonCardImageBackground
                         types={types}
-                        className={`relative cursor-pointer flex justify-center items-center py-1 md:py-2 bg-cover bg-center rounded-lg border-2 border-black mb-1 md:mb-2 h-24 md:h-32 w-[80%] mx-auto hover:scale-105 hover:border-red-400 hover:border-2 transition-all duration-300 mt-2`}
+                        className={`relative cursor-pointer flex justify-center items-center py-1 md:py-2 bg-cover bg-center rounded-lg border-2 border-black mb-1 md:mb-2 h-24 md:h-32 w-[80%] mx-auto transition-all duration-200 ease-in-out hover:scale-105 hover:border-red-400 hover:border-2 active:scale-95 transform`}
+                        onClick={() => handleEvolutionClick(evolutionPokemon)}
+                        onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.95)'}
+                        onMouseUp={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+                        onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
                       >
                         <img
                           src={images[0].imageUrl}

@@ -77,7 +77,7 @@ export const CarouselPokemon = memo(
     id = null,
   }) => {
     return (
-      <div className="max-w-xs sm:max-w-sm mx-auto px-0 sm:px-6">
+      <div className="max-w-[55vw] sm:max-w-sm mx-auto px-0 sm:px-6">
         <Carousel>
           <CarouselContent>
             {images.map(({ imageName, imageUrl }, index) => (
@@ -142,6 +142,7 @@ export const CarouselPokemon = memo(
 const PokemonCard = memo(({ pokemon }) => {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [currentPokemon, setCurrentPokemon] = useState(pokemon);
 
   const imageUrls = useMemo(() => {
     return Object.entries(pokemon.sprites).map(([key, value]) => {
@@ -154,6 +155,18 @@ const PokemonCard = memo(({ pokemon }) => {
       return null;
     });
   }, [pokemon.sprites]).filter(Boolean);
+
+  const carouselImageUrls = useMemo(() => {
+    return Object.entries(currentPokemon.sprites).map(([key, value]) => {
+      if (value) {
+        return {
+          imageName: imageNameMapper[key],
+          imageUrl: value,
+        };
+      }
+      return null;
+    });
+  }, [currentPokemon.sprites]).filter(Boolean);
 
   const imageUrl = useMemo(() => {
     return imageUrls[0]?.imageUrl || null;
@@ -188,6 +201,7 @@ const PokemonCard = memo(({ pokemon }) => {
 
   const handleCardClick = () => {
     setIsModalOpen(true);
+    setCurrentPokemon(pokemon);
   };
 
   const cardVariants = {
@@ -210,7 +224,6 @@ const PokemonCard = memo(({ pokemon }) => {
         className="group cursor-pointer h-full"
         variants={cardVariants}
         whileHover="hover"
-        whileTap="tap"
         transition={
           shouldReduceMotion
             ? {}
@@ -220,7 +233,6 @@ const PokemonCard = memo(({ pokemon }) => {
                 damping: 20,
               }
         }
-        onClick={handleCardClick}
       >
         <Card className="relative overflow-hidden transition-all duration-300 hover:border-red-400 h-full flex flex-col max-w-xs sm:max-w-sm mx-auto">
           {!shouldReduceMotion && (
@@ -311,6 +323,7 @@ const PokemonCard = memo(({ pokemon }) => {
           <CardFooter className="items-center justify-center gap-2 flex-shrink-0 h-8 mt-auto">
             <CardAction>
               <Button
+                onClick={handleCardClick}
                 variant="secondary"
                 size="xs"
                 font="retro"
@@ -329,20 +342,23 @@ const PokemonCard = memo(({ pokemon }) => {
       </motion.div>
 
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="max-w-[85vw] sm:max-w-[425px] max-h-[80vh] [&>button]:hidden p-2 sm:p-6 flex flex-col">
+        <DialogContent className="max-w-[80vw] sm:max-w-[425px] max-h-[70vh] sm:max-h-[80vh] [&>button]:hidden p-2 sm:p-6 flex flex-col">
           <DialogHeader className="pb-2 sm:pb-4 flex-shrink-0">
             <DialogTitle className="capitalize text-center text-xl sm:text-2xl">
-              {pokemon.name} #{pokemon.id}
+              {currentPokemon.name} #{currentPokemon.id}
             </DialogTitle>
           </DialogHeader>
-          <div className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+          <div className="flex-1 px-4 sm:px-0 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
             <CarouselPokemon
-              pokemon={pokemon}
-              images={imageUrls}
+              pokemon={currentPokemon}
+              images={carouselImageUrls}
               imageLoaded={imageLoaded}
               setImageLoaded={setImageLoaded}
             />
-            <PokemonCardDetails pokemon={pokemon} />
+            <PokemonCardDetails
+              currentPokemon={currentPokemon}
+              setCurrentPokemon={setCurrentPokemon}
+            />
           </div>
         </DialogContent>
       </Dialog>

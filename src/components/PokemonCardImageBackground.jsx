@@ -59,6 +59,7 @@ const PokemonCardImageBackground = ({
           className
         )}
         style={{ backgroundImage: `url(${typeBackgrounds[types[0]]})` }}
+        onClick={handleClick}
       >
         {types && (
           <div
