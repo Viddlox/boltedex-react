@@ -348,7 +348,7 @@ const PokemonCard = memo(({ pokemon }) => {
               {currentPokemon.name} #{currentPokemon.id}
             </DialogTitle>
           </DialogHeader>
-          <div className="flex-1 px-4 sm:px-0 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+          <div className="flex-1 sm:px-0 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
             <CarouselPokemon
               pokemon={currentPokemon}
               images={carouselImageUrls}

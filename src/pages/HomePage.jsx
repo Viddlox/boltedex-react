@@ -31,6 +31,13 @@ const HomePage = () => {
     [data]
   );
 
+  // Reset scroll position when search query changes
+  useEffect(() => {
+    if (gridRef.current) {
+      gridRef.current.scrollTo({ scrollLeft: 0, scrollTop: 0 });
+    }
+  }, [debouncedSearchQuery]);
+
   // Calculate grid dimensions based on screen size
   useEffect(() => {
     const calculateDimensions = () => {
