@@ -17,7 +17,7 @@ import computeStatPercentage from "@/utils/computeStatPercentage";
 import computeHeightWeightSI from "@/utils/computeHeightWeightSI";
 import statMapper from "@/utils/statMapper";
 import imageNameMapper from "@/utils/imageNameMapper";
-import getCardBackgroundByType from "@/utils/cardBackgrounds";
+import PokemonCardImageBackground from "@/components/PokemonCardImageBackground";
 
 const PokemonCardDetails = ({ pokemon }) => {
   const { data: abilities, isFetching: isFetchingAbilities } =
@@ -30,7 +30,7 @@ const PokemonCardDetails = ({ pokemon }) => {
     useGetPokemonLocationEncounters({
       name: pokemon.name,
     });
-  const backgroundImage = getCardBackgroundByType(pokemon.types);
+  const types = pokemon.types;
 
   const computedData = useMemo(() => {
     const pokemonStatPercentages = computeStatPercentage(pokemon.baseStats);
@@ -125,7 +125,14 @@ const PokemonCardDetails = ({ pokemon }) => {
         bottomElement.removeEventListener("scroll", handleBottomScroll);
       }
     };
-  }, [pokemon, weaknesses, immunities, abilities, locationEncounters, evolutionChain]);
+  }, [
+    pokemon,
+    weaknesses,
+    immunities,
+    abilities,
+    locationEncounters,
+    evolutionChain,
+  ]);
 
   return (
     <Tabs
@@ -312,18 +319,16 @@ const PokemonCardDetails = ({ pokemon }) => {
                       className="flex flex-col items-center w-full"
                     >
                       {/* Evolution Stage */}
-                      <div
-                        className="relative flex justify-center items-center py-1 md:py-2 bg-cover bg-center rounded-lg border-2 border-black mb-1 md:mb-2 h-24 md:h-32 w-full"
-                        style={{
-                          backgroundImage: `url(${backgroundImage})`,
-                        }}
+                      <PokemonCardImageBackground
+                        types={types}
+                        className={`relative cursor-pointer flex justify-center items-center py-1 md:py-2 bg-cover bg-center rounded-lg border-2 border-black mb-1 md:mb-2 h-24 md:h-32 w-[80%] mx-auto hover:scale-105 hover:border-red-400 hover:border-2 transition-all duration-300 mt-2`}
                       >
                         <img
                           src={images[0].imageUrl}
                           alt={evolutionPokemon.name}
                           className="w-full h-full object-contain"
                         />
-                      </div>
+                      </PokemonCardImageBackground>
 
                       <div className="flex flex-row items-center justify-center bg-white w-full border-2 border-black">
                         <span className="text-xl text-black font-bold capitalize text-center ">

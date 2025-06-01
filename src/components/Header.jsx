@@ -25,7 +25,7 @@ const Header = () => {
           <div className="flex flex-col items-center justify-center">
             <div className="flex flex-row items-center justify-center gap-4">
               <img
-                src="/pokeball.png"
+                src="/pokeball.webp"
                 alt="pokeball"
                 className="w-12 h-12 sm:w-16 sm:h-16 object-contain"
               />
@@ -34,7 +34,7 @@ const Header = () => {
                 Boltedex
               </h1>
               <img
-                src="/pokeball.png"
+                src="/pokeball.webp"
                 alt="pokeball"
                 className="w-12 h-12 sm:w-16 sm:h-16 object-contain -scale-x-100"
               />
@@ -61,7 +61,7 @@ const Header = () => {
       >
         <div className="flex flex-row items-center sm:gap-2">
           <img
-            src="/pokeball.png"
+            src="/pokeball.webp"
             alt="pokeball"
             className="w-12 h-12 sm:w-16 sm:h-16 object-contain"
           />

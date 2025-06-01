@@ -30,16 +30,14 @@ import {
   CarouselPrevious,
   CarouselNext,
 } from "@/components/ui/8bit/carousel";
-
 import PokemonCardDetails from "@/components/PokemonCardDetails";
+import PokemonCardImageBackground from "@/components/PokemonCardImageBackground";
+
 import pokemonTypeMapper from "@/utils/pokemonTypeMapper";
 import computeStatPercentage from "@/utils/computeStatPercentage";
 import computeHeightWeightSI from "@/utils/computeHeightWeightSI";
 import statMapper from "@/utils/statMapper";
 import imageNameMapper from "@/utils/imageNameMapper";
-
-import getCardBackgroundByType from "@/utils/cardBackgrounds";
-
 
 export const PokemonType = memo(({ type, damage }) => (
   <HoverCard>
@@ -78,7 +76,6 @@ export const CarouselPokemon = memo(
     setImageLoaded = () => {},
     id = null,
   }) => {
-    const backgroundImage = getCardBackgroundByType(pokemon.types);
     return (
       <div className="max-w-xs sm:max-w-sm mx-auto px-0 sm:px-6">
         <Carousel>
@@ -91,9 +88,9 @@ export const CarouselPokemon = memo(
                       {imageName || "Unknown"}
                     </p>
                   </div>
-                  <div
+                  <PokemonCardImageBackground
+                    types={pokemon.types}
                     className="relative flex justify-center items-center py-1 sm:py-2 bg-cover bg-center rounded-lg border-2 border-black mb-1 sm:mb-2 h-24 sm:h-40 flex-shrink-0 w-full"
-                    style={{ backgroundImage: `url(${backgroundImage})` }}
                   >
                     {!imageLoaded && imageUrl && (
                       <Loader2
@@ -122,7 +119,7 @@ export const CarouselPokemon = memo(
                         onError={() => setImageLoaded(true)}
                       />
                     )}
-                  </div>
+                  </PokemonCardImageBackground>
                   {id && (
                     <div className="text-center w-full bg-white">
                       <p className="text-xs sm:text-sm font-bold text-foreground px-1 sm:px-3 border-2 border-foreground rounded-none font-brand">
@@ -177,15 +174,13 @@ const PokemonCard = memo(({ pokemon }) => {
       pokemon.height,
       pokemon.weight
     );
-    const backgroundImage = getCardBackgroundByType(pokemon.types);
 
     return {
       pokemonStatPercentages,
       height,
       weight,
-      backgroundImage,
     };
-  }, [pokemon.baseStats, pokemon.height, pokemon.weight, pokemon.types]);
+  }, [pokemon.baseStats, pokemon.height, pokemon.weight]);
 
   const shouldReduceMotion = window.matchMedia(
     "(prefers-reduced-motion: reduce)"
@@ -245,9 +240,9 @@ const PokemonCard = memo(({ pokemon }) => {
           </CardHeader>
 
           <CardContent className="flex flex-col flex-grow px-3">
-            <div
-              className="relative flex justify-center items-center py-2 bg-cover bg-center rounded-lg border-2 border-black mb-2 h-20 flex-shrink-0"
-              style={{ backgroundImage: `url(${computedData.backgroundImage})` }}
+            <PokemonCardImageBackground
+              types={pokemon.types}
+              className={`relative flex justify-center items-center py-2 bg-cover bg-center rounded-lg border-2 border-black mb-2 h-20 flex-shrink-0`}
             >
               {!imageLoaded && imageUrl && (
                 <Loader2 color="red" className="w-16 h-16 animate-spin" />
@@ -284,7 +279,7 @@ const PokemonCard = memo(({ pokemon }) => {
                   onError={() => setImageLoaded(true)}
                 />
               )}
-            </div>
+            </PokemonCardImageBackground>
 
             <div className="flex flex-row items-center text-sm justify-center gap-3 rounded-lg border-2 border-black bg-white/80 mb-2 h-5 flex-shrink-0">
               <p>{computedData.height}</p>

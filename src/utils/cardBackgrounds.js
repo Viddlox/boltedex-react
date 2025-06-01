@@ -1,22 +1,22 @@
 // Import all Pokemon type background images
-import psychic from "@/assets/psychic.jpg";
+import psychic from "@/assets/psychic.webp";
 import fairy from "@/assets/fairy.webp";
-import poison from "@/assets/poison.jpg";
-import electric from "@/assets/electric.png";
+import poison from "@/assets/poison.webp";
+import electric from "@/assets/electric.webp";
 import steel from "@/assets/steel.webp";
-import fighting from "@/assets/fighting.jpg";
+import fighting from "@/assets/fighting.webp";
 import ghost from "@/assets/ghost.webp";
-import normal from "@/assets/normal.png";
-import flying from "@/assets/flying.jpg";
-import ice from "@/assets/ice.jpg";
-import water from "@/assets/water.jpg";
-import fire from "@/assets/fire.png";
-import dragon from "@/assets/dragon.png";
-import dark from "@/assets/dark.png";
-import rock from "@/assets/rock.png";
-import bug from "@/assets/bug.jpg";
-import ground from "@/assets/ground.jpg";
-import grass from "@/assets/grass.png";
+import normal from "@/assets/normal.webp";
+import flying from "@/assets/flying.webp";
+import ice from "@/assets/ice.webp";
+import water from "@/assets/water.webp";
+import fire from "@/assets/fire.webp";
+import dragon from "@/assets/dragon.webp";
+import dark from "@/assets/dark.webp";
+import rock from "@/assets/rock.webp";
+import bug from "@/assets/bug.webp";
+import ground from "@/assets/ground.webp";
+import grass from "@/assets/grass.webp";
 
 const typeBackgrounds = {
   normal,
