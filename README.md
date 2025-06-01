@@ -10,7 +10,7 @@
   </p>
   
   <p>
-    <a href="https://boltedx.up.railway.app/" target="_blank">
+    <a href="https://boltedex.up.railway.app/" target="_blank">
       <img src="https://img.shields.io/badge/🚀_Live_Demo-FF6B6B?style=for-the-badge&logoColor=white" alt="Live Demo" />
     </a>
   </p>
