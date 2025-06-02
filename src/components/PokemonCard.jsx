@@ -15,6 +15,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/8bit/dialog";
 import {
   HoverCard,
@@ -38,6 +39,8 @@ import computeStatPercentage from "@/utils/computeStatPercentage";
 import computeHeightWeightSI from "@/utils/computeHeightWeightSI";
 import statMapper from "@/utils/statMapper";
 import imageNameMapper from "@/utils/imageNameMapper";
+
+import { useQueryClient } from "@tanstack/react-query";
 
 export const PokemonType = memo(({ type, damage }) => (
   <HoverCard>
@@ -74,10 +77,11 @@ export const CarouselPokemon = memo(
     images,
     imageLoaded = false,
     setImageLoaded = () => {},
-    id = null,
+    height = null,
+    weight = null,
   }) => {
     return (
-      <div className="max-w-[55vw] sm:max-w-sm mx-auto px-0 sm:px-6">
+      <div className="max-w-[55vw] sm:max-w-sm mx-auto px-0 sm:px-6 mb-2">
         <Carousel>
           <CarouselContent>
             {images.map(({ imageName, imageUrl }, index) => (
@@ -90,7 +94,7 @@ export const CarouselPokemon = memo(
                   </div>
                   <PokemonCardImageBackground
                     types={pokemon.types}
-                    className="relative flex justify-center items-center py-1 sm:py-2 bg-cover bg-center rounded-lg border-2 border-black mb-1 sm:mb-2 h-24 sm:h-40 flex-shrink-0 w-full"
+                    className="relative flex justify-center items-center py-1 sm:py-2 bg-cover bg-center rounded-lg border-2 border-black h-24 sm:h-40 flex-shrink-0 w-full"
                   >
                     {!imageLoaded && imageUrl && (
                       <Loader2
@@ -120,13 +124,11 @@ export const CarouselPokemon = memo(
                       />
                     )}
                   </PokemonCardImageBackground>
-                  {id && (
-                    <div className="text-center w-full bg-white">
-                      <p className="text-xs sm:text-sm font-bold text-foreground px-1 sm:px-3 border-2 border-foreground rounded-none font-brand">
-                        #{id}
-                      </p>
-                    </div>
-                  )}
+                  <div className="text-center w-full bg-white">
+                    <p className="text-xs sm:text-sm font-bold text-foreground px-1 sm:px-3 border-b-2 border-x-2 border-foreground rounded-none font-brand">
+                      {height} {weight}
+                    </p>
+                  </div>
                 </div>
               </CarouselItem>
             ))}
@@ -143,8 +145,16 @@ const PokemonCard = memo(({ pokemon }) => {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentPokemon, setCurrentPokemon] = useState(pokemon);
+  const queryClient = useQueryClient();
 
-  const imageUrls = useMemo(() => {
+  useEffect(() => {
+    const handlePreloadPokemon = async () => {
+      await queryClient.setQueryData(["pokemon", pokemon.name], pokemon);
+    };
+    handlePreloadPokemon();
+  }, [pokemon, queryClient]);
+
+  const imageUrl = useMemo(() => {
     return Object.entries(pokemon.sprites).map(([key, value]) => {
       if (value) {
         return {
@@ -154,7 +164,7 @@ const PokemonCard = memo(({ pokemon }) => {
       }
       return null;
     });
-  }, [pokemon.sprites]).filter(Boolean);
+  }, [pokemon.sprites]).filter(Boolean)[0].imageUrl;
 
   const carouselImageUrls = useMemo(() => {
     return Object.entries(currentPokemon.sprites).map(([key, value]) => {
@@ -168,11 +178,6 @@ const PokemonCard = memo(({ pokemon }) => {
     });
   }, [currentPokemon.sprites]).filter(Boolean);
 
-  const imageUrl = useMemo(() => {
-    return imageUrls[0]?.imageUrl || null;
-  }, [imageUrls]);
-
-  // Set imageLoaded to true immediately if there's no image to load
   useEffect(() => {
     if (!imageUrl) {
       setImageLoaded(true);
@@ -193,7 +198,23 @@ const PokemonCard = memo(({ pokemon }) => {
       height,
       weight,
     };
-  }, [pokemon.baseStats, pokemon.height, pokemon.weight]);
+  }, [pokemon]);
+
+  const modalComputedData = useMemo(() => {
+    const pokemonStatPercentages = computeStatPercentage(
+      currentPokemon.baseStats
+    );
+    const { height, weight } = computeHeightWeightSI(
+      currentPokemon.height,
+      currentPokemon.weight
+    );
+
+    return {
+      pokemonStatPercentages,
+      height,
+      weight,
+    };
+  }, [currentPokemon]);
 
   const shouldReduceMotion = window.matchMedia(
     "(prefers-reduced-motion: reduce)"
@@ -354,6 +375,8 @@ const PokemonCard = memo(({ pokemon }) => {
               images={carouselImageUrls}
               imageLoaded={imageLoaded}
               setImageLoaded={setImageLoaded}
+              height={modalComputedData.height}
+              weight={modalComputedData.weight}
             />
             <PokemonCardDetails
               currentPokemon={currentPokemon}

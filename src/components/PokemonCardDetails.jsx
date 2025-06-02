@@ -16,15 +16,18 @@ import { useGetPokemonAbilities } from "@/hooks/useGetPokemonAbilities";
 import { useGetPokemonDetail } from "@/hooks/useGetPokemonDetail";
 
 import computeStatPercentage from "@/utils/computeStatPercentage";
-import computeHeightWeightSI from "@/utils/computeHeightWeightSI";
 import statMapper from "@/utils/statMapper";
 import imageNameMapper from "@/utils/imageNameMapper";
 import PokemonCardImageBackground from "@/components/PokemonCardImageBackground";
 
 const PokemonCardDetails = ({ currentPokemon, setCurrentPokemon }) => {
-  const [selectedPokemonName, setSelectedPokemonName] = useState(currentPokemon.name);
+  const [selectedPokemonName, setSelectedPokemonName] = useState(
+    currentPokemon.name
+  );
 
-  const { data: pokemonDetail } = useGetPokemonDetail({ name: selectedPokemonName });
+  const { data: pokemonDetail } = useGetPokemonDetail({
+    name: selectedPokemonName,
+  });
   const { data: abilities, isFetching: isFetchingAbilities } =
     useGetPokemonAbilities({ name: selectedPokemonName });
   const { data: evolutionChain, isFetching: isFetchingEvolutionChain } =
@@ -41,32 +44,29 @@ const PokemonCardDetails = ({ currentPokemon, setCurrentPokemon }) => {
     const pokemonStatPercentages = computeStatPercentage(
       currentPokemon.baseStats
     );
-    const { height, weight } = computeHeightWeightSI(
-      currentPokemon.height,
-      currentPokemon.weight
-    );
-
     return {
       pokemonStatPercentages,
-      height,
-      weight,
     };
-  }, [currentPokemon.baseStats, currentPokemon.height, currentPokemon.weight]);
+  }, [currentPokemon.baseStats]);
 
   useEffect(() => {
     if (pokemonDetail) {
       const weaknessesSource = pokemonDetail.weaknesses || {};
       const immunitiesSource = pokemonDetail.immunities || {};
 
-      const weaknesses = Object.entries(weaknessesSource).map(([key, value]) => ({
-        type: key,
-        damage: value,
-      })).sort((a, b) => a.damage - b.damage);
+      const weaknesses = Object.entries(weaknessesSource)
+        .map(([key, value]) => ({
+          type: key,
+          damage: value,
+        }))
+        .sort((a, b) => a.damage - b.damage);
 
-      const immunities = Object.entries(immunitiesSource).map(([key, value]) => ({
-        type: key,
-        damage: value,
-      })).sort((a, b) => a.damage - b.damage);
+      const immunities = Object.entries(immunitiesSource)
+        .map(([key, value]) => ({
+          type: key,
+          damage: value,
+        }))
+        .sort((a, b) => a.damage - b.damage);
 
       setCurrentPokemon({
         ...pokemonDetail,
@@ -86,7 +86,7 @@ const PokemonCardDetails = ({ currentPokemon, setCurrentPokemon }) => {
   const [showBottomChevron, setShowBottomChevron] = useState(false);
 
   const checkScrollable = (element, setChevron) => {
-    if (!element) return; 
+    if (!element) return;
     const { scrollTop, scrollHeight, clientHeight } = element;
     const hasMore =
       scrollHeight > clientHeight &&
@@ -142,12 +142,14 @@ const PokemonCardDetails = ({ currentPokemon, setCurrentPokemon }) => {
   const handleEvolutionClick = (evolutionPokemon) => {
     if (evolutionPokemon.name !== currentPokemon.name) {
       setSelectedPokemonName(evolutionPokemon.name);
+      setCurrentCard("overview");
     }
   };
 
   return (
     <Tabs
       defaultValue="overview"
+      value={currentCard}
       className="w-full"
       variant="retro"
       font="retro"
@@ -172,7 +174,9 @@ const PokemonCardDetails = ({ currentPokemon, setCurrentPokemon }) => {
               >
                 {/* Types Row */}
                 <div>
-                  <h3 className="text-lg font-bold mb-1 md:mb-2">Types</h3>
+                  <h3 className="text-lg font-bold mb-1 md:mb-2 underline">
+                    Types
+                  </h3>
                   <div className="flex flex-row gap-2 md:gap-3">
                     {currentPokemon.types.map((type) => (
                       <PokemonType key={type} type={type} />
@@ -182,7 +186,9 @@ const PokemonCardDetails = ({ currentPokemon, setCurrentPokemon }) => {
 
                 {/* Weaknesses Row */}
                 <div>
-                  <h3 className="text-lg font-bold mb-1 md:mb-2">Weaknesses</h3>
+                  <h3 className="text-lg font-bold mb-1 md:mb-2 underline">
+                    Weaknesses
+                  </h3>
                   <div className="flex flex-wrap gap-1 md:gap-2">
                     {currentPokemon.weaknesses.length > 0 ? (
                       currentPokemon.weaknesses.map((weakness) => (
@@ -204,7 +210,9 @@ const PokemonCardDetails = ({ currentPokemon, setCurrentPokemon }) => {
 
                 {/* Immunities Row */}
                 <div>
-                  <h3 className="text-lg font-bold mb-1 md:mb-2">Immunities</h3>
+                  <h3 className="text-lg font-bold mb-1 md:mb-2 underline">
+                    Immunities
+                  </h3>
                   <div className="flex flex-wrap gap-1 md:gap-2">
                     {currentPokemon.immunities.length > 0 ? (
                       currentPokemon.immunities.map((immunity) => (
@@ -235,7 +243,7 @@ const PokemonCardDetails = ({ currentPokemon, setCurrentPokemon }) => {
           {/* Right column - Abilities */}
           <Card className="flex flex-col h-48 md:h-64 relative bg-gray-200">
             <CardContent className="pt-0 flex flex-col h-full">
-              <CardTitle className="text-lg font-bold text-center mb-2 md:mb-3">
+              <CardTitle className="text-lg font-bold text-center mb-2 md:mb-3 underline">
                 Abilities
               </CardTitle>
               <div
@@ -246,12 +254,12 @@ const PokemonCardDetails = ({ currentPokemon, setCurrentPokemon }) => {
                   abilities.map((ability, index) => (
                     <div
                       key={index}
-                      className={`p-1.5 md:p-2 bg-white/80 rounded-none border-2 border-foreground ${
+                      className={`p-1 md:p-2 bg-white/80 rounded-none border-2 border-foreground ${
                         ability.hidden ? "bg-yellow-200 text-black" : ""
                       }`}
                     >
                       <div className="flex items-center justify-between mb-1">
-                        <span className="font-bold text-sm capitalize">
+                        <span className="font-bold text-xs capitalize underline">
                           {ability.name.replace("-", " ")}
                         </span>
                         {ability.hidden && (
@@ -289,7 +297,7 @@ const PokemonCardDetails = ({ currentPokemon, setCurrentPokemon }) => {
         {/* Base Stats Section - Full width bottom */}
         <Card className="bg-gray-200">
           <CardContent className="pt-0">
-            <CardTitle className="text-lg font-bold text-center mb-2 md:mb-4">
+            <CardTitle className="text-lg font-bold text-center mb-2 md:mb-4 underline">
               Base Stats
             </CardTitle>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -336,9 +344,15 @@ const PokemonCardDetails = ({ currentPokemon, setCurrentPokemon }) => {
                         types={types}
                         className={`relative cursor-pointer flex justify-center items-center py-1 md:py-2 bg-cover bg-center rounded-lg border-2 border-black mb-1 md:mb-2 h-24 md:h-32 w-[80%] mx-auto transition-all duration-200 ease-in-out hover:scale-105 hover:border-red-400 hover:border-2 active:scale-95 transform`}
                         onClick={() => handleEvolutionClick(evolutionPokemon)}
-                        onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.95)'}
-                        onMouseUp={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
-                        onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                        onMouseDown={(e) =>
+                          (e.currentTarget.style.transform = "scale(0.95)")
+                        }
+                        onMouseUp={(e) =>
+                          (e.currentTarget.style.transform = "scale(1.05)")
+                        }
+                        onMouseLeave={(e) =>
+                          (e.currentTarget.style.transform = "scale(1)")
+                        }
                       >
                         <img
                           src={images[0].imageUrl}
