@@ -355,7 +355,7 @@ const PokemonCardDetails = ({ currentPokemon, setCurrentPokemon }) => {
                         }
                       >
                         <img
-                          src={images[0].imageUrl}
+                          src={images.length > 0 ? images[0].imageUrl : ""}
                           alt={evolutionPokemon.name}
                           className="w-full h-full object-contain"
                         />

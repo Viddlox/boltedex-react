@@ -155,7 +155,7 @@ const PokemonCard = memo(({ pokemon }) => {
   }, [pokemon, queryClient]);
 
   const imageUrl = useMemo(() => {
-    return Object.entries(pokemon.sprites).map(([key, value]) => {
+    const validSprites = Object.entries(pokemon.sprites).map(([key, value]) => {
       if (value) {
         return {
           imageName: imageNameMapper[key],
@@ -163,11 +163,13 @@ const PokemonCard = memo(({ pokemon }) => {
         };
       }
       return null;
-    });
-  }, [pokemon.sprites]).filter(Boolean)[0].imageUrl;
+    }).filter(Boolean);
+    
+    return validSprites.length > 0 ? validSprites[0].imageUrl : null;
+  }, [pokemon.sprites]);
 
   const carouselImageUrls = useMemo(() => {
-    return Object.entries(currentPokemon.sprites).map(([key, value]) => {
+    const validSprites = Object.entries(currentPokemon.sprites).map(([key, value]) => {
       if (value) {
         return {
           imageName: imageNameMapper[key],
@@ -175,8 +177,10 @@ const PokemonCard = memo(({ pokemon }) => {
         };
       }
       return null;
-    });
-  }, [currentPokemon.sprites]).filter(Boolean);
+    }).filter(Boolean);
+    
+    return validSprites;
+  }, [currentPokemon.sprites]);
 
   useEffect(() => {
     if (!imageUrl) {
